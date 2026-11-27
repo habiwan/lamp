@@ -1,8 +1,8 @@
 services:
   web:
     build:
-      context: ./php
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: php/Dockerfile
     container_name: lamp-web
     restart: unless-stopped
     security_opt:
