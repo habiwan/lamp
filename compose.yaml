@@ -1,0 +1,46 @@
+services:
+  web:
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    container_name: lamp-web
+    restart: unless-stopped
+    ports:
+      - ${HTTP_PORT}:80
+    volumes:
+      - ./www:/var/www/html
+    environment:
+      DB_HOST: db
+      DB_NAME: ${MYSQL_DATABASE}
+      DB_USER: ${MYSQL_USER}
+      DB_PASS: ${MYSQL_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - lamp-net
+
+  db:
+    image: mariadb:11
+    container_name: lamp-db
+    restart: unless-stopped
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${MYSQL_DATABASE}
+      MARIADB_USER: ${MYSQL_USER}
+      MARIADB_PASSWORD: ${MYSQL_PASSWORD}
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - lamp-net
+
+volumes:
+  db_data:
+
+networks:
+  lamp-net:
