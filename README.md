@@ -10,6 +10,7 @@ On your bazzite host, create the directory and copy index.php into it (or pull y
 Bash
 
 mkdir -p "/var/home/$USER/lamp/www"
+
 cp www/index.php "/var/home/$USER/lamp/www/index.php"
 
 In Portainer under the lamp stack's Environment variables, add 
