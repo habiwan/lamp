@@ -1,0 +1,11 @@
+# Local environment files and secrets
+.env
+.env.*
+!.env.example
+
+# Editor and OS artifacts
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
