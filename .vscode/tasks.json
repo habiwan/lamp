@@ -1,0 +1,33 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "lampsync (all remotes + deploy)",
+      "type": "shell",
+      "command": "lampsync",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "lampsync (pull origin)",
+      "type": "shell",
+      "command": "lampsync origin",
+      "problemMatcher": []
+    },
+    {
+      "label": "lampsync (pull gitea)",
+      "type": "shell",
+      "command": "lampsync gitea",
+      "problemMatcher": []
+    },
+    {
+      "label": "lampsync (pull gitlab)",
+      "type": "shell",
+      "command": "lampsync gitlab",
+      "problemMatcher": []
+    }
+  ]
+}
