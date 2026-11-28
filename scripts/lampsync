@@ -29,14 +29,19 @@ case "$MODE" in
   origin)
     pull_merge origin
     ;;
+  gitlab)
+    pull_merge gitlab
+    ;;
   both)
     pull_merge origin
     pull_merge gitea
+    pull_merge gitlab
     git push origin main
     git push gitea main
+    git push gitlab main
     ;;
   *)
-    echo "Usage: lampsync [gitea|origin|both]" >&2
+    echo "Usage: lampsync [gitea|origin|gitlab|both]" >&2
     exit 1
     ;;
 esac
