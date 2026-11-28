@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Syncs local lamp repository with GitHub (origin), Gitea (gitea), and GitLab (gitlab),
+# then deploys www/ and scripts/ to local runtime directories via rsync.
 set -euo pipefail
 
 REPO_DIR="$HOME/Code/lamp"
@@ -8,11 +10,25 @@ MODE="${1:-both}"
 
 cd "$REPO_DIR"
 
+# Block pulls/pushes if there are uncommitted or untracked edits so merges don't collide
+# with in-progress work, and print copy-ready commands (including git stash).
 if [ -n "$(git status --porcelain)" ]; then
-  echo "Error: Uncommitted or untracked changes in $REPO_DIR. Commit or stash first." >&2
+  cat >&2 <<EOF
+Error: Uncommitted or untracked changes in $REPO_DIR.
+
+Choose one of these commands before running lampsync again:
+  1. Commit all changes:
+     git -C "$REPO_DIR" add -A && git -C "$REPO_DIR" commit -m "Update lamp repo"
+  2. Temporarily shelve changes (stash):
+     git -C "$REPO_DIR" stash push -u -m "WIP before lampsync"
+  3. Restore shelved changes later:
+     git -C "$REPO_DIR" stash pop
+EOF
   exit 1
 fi
 
+# Pull a remote branch using merge (--no-rebase) to preserve commit SHAs across remotes,
+# aborting cleanly if a conflict occurs.
 pull_merge() {
   local remote="$1"
   if ! git pull --no-rebase "$remote" main; then
@@ -33,6 +49,8 @@ case "$MODE" in
     pull_merge gitlab
     ;;
   both)
+    # Pull from all three remotes first so any remote commit is integrated locally,
+    # then push the unified main branch out to all three remotes.
     pull_merge origin
     pull_merge gitea
     pull_merge gitlab
@@ -46,9 +64,11 @@ case "$MODE" in
     ;;
 esac
 
+# Deploy web files to WEB_ROOT (--delete removes files no longer in www/)
 mkdir -p "$WEB_ROOT"
 rsync -av --delete "$REPO_DIR/www/" "$WEB_ROOT/"
 
+# Deploy repository scripts to SCRIPTS_ROOT so runtime scripts stay current
 if [ -d "$REPO_DIR/scripts" ]; then
   mkdir -p "$SCRIPTS_ROOT"
   rsync -av --delete "$REPO_DIR/scripts/" "$SCRIPTS_ROOT/"
