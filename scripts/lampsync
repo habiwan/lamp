@@ -3,6 +3,7 @@ set -euo pipefail
 
 REPO_DIR="$HOME/Code/lamp"
 WEB_ROOT="$HOME/lamp/www"
+SCRIPTS_ROOT="$HOME/lamp/scripts"
 MODE="${1:-both}"
 
 cd "$REPO_DIR"
@@ -42,3 +43,8 @@ esac
 
 mkdir -p "$WEB_ROOT"
 rsync -av --delete "$REPO_DIR/www/" "$WEB_ROOT/"
+
+if [ -d "$REPO_DIR/scripts" ]; then
+  mkdir -p "$SCRIPTS_ROOT"
+  rsync -av --delete "$REPO_DIR/scripts/" "$SCRIPTS_ROOT/"
+fi
