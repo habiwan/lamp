@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_DIR="$HOME/Code/lamp"
+WEB_ROOT="$HOME/lamp/www"
+MODE="${1:-both}"
+
+cd "$REPO_DIR"
+
+if [ -n "$(git status --porcelain)" ]; then
+  echo "Error: Uncommitted or untracked changes in $REPO_DIR. Commit or stash first." >&2
+  exit 1
+fi
+
+pull_merge() {
+  local remote="$1"
+  if ! git pull --no-rebase "$remote" main; then
+    echo "Error: Merge conflict while pulling from $remote/main. Aborting merge." >&2
+    git merge --abort >/dev/null 2>&1 || true
+    exit 1
+  fi
+}
+
+case "$MODE" in
+  gitea)
+    pull_merge gitea
+    ;;
+  origin)
+    pull_merge origin
+    ;;
+  both)
+    pull_merge origin
+    pull_merge gitea
+    git push origin main
+    git push gitea main
+    ;;
+  *)
+    echo "Usage: lampsync [gitea|origin|both]" >&2
+    exit 1
+    ;;
+esac
+
+mkdir -p "$WEB_ROOT"
+rsync -av --delete "$REPO_DIR/www/" "$WEB_ROOT/"
